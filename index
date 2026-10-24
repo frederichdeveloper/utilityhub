@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UtilityHub — Piattaforma Multifunzione Online</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#2563eb',
+                            600: '#1d4ed8',
+                            700: '#1e40af'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- LIBRERIE CDN PER ESTRAZIONE, CONVERSIONE E QR CODE -->
+    <!-- PDF.js per lettura ed estrazione testo e rendering PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        }
+    </script>
+    <!-- SheetJS per lettura fogli Excel (.xlsx, .xls, .csv) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Mammoth.js per file Word DOCX -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
+    <!-- Tesseract.js per OCR Immagini -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <!-- PDF-Lib per manipolazione, unione, compressione e modifica PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <!-- JSZip per la creazione di archivi ZIP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- qr-code-styling per generare QR Code avanzati (stile Me-QR con loghi e stili) -->
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+    <!-- html2pdf.js per esportazione documenti in PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        .drop-zone--over {
+            border-color: #2563eb !important;
+            background-color: rgba(37, 99, 235, 0.05) !important;
+        }
+        .toast-enter {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        .toast-enter-active {
+            transform: translateY(0);
+            opacity: 1;
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+    <!-- BARRA DI NAVIGAZIONE PRINCIPALE -->
+    <header class="sticky top-0 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="showSection('home')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md">
+                        <i class="fa-solid fa-cubes text-xl"></i>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">UtilityHub</span>
+                </div>
+
+                <!-- Navigazione Desktop -->
+                <nav class="hidden md:flex space-x-1 lg:space-x-2">
+                    <button onclick="showSection('converter')" id="nav-converter" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                        <i class="fa-solid fa-right-left mr-1.5 text-blue-500"></i>Convertitore
+                    </button>
+                    <button onclick="showSection('extractor')" id="nav-extractor" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                        <i class="fa-solid fa-file-export mr-1.5 text-emerald-500"></i>Estrai Testo
+                    </button>
+                    <button onclick="showSection('editor')" id="nav-editor" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                        <i class="fa-solid fa-pen-to-square mr-1.5 text-amber-500"></i>Editor
+                    </button>
+                    <button onclick="showSection('counter')" id="nav-counter" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                        <i class="fa-solid fa-calculator mr-1.5 text-purple-500"></i>Contatore
+                    </button>
+                    <button onclick="showSection('pdf-tools')" id="nav-pdf-tools" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                        <i class="fa-solid fa-file-pdf mr-1.5 text-red-500"></i>Strumenti PDF
+                    </button>
+                    <button onclick="showSection('qrcode')" id="nav-qrcode" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                        <i class="fa-solid fa-qrcode mr-1.5 text-indigo-500"></i>QR Code
+                    </button>
+                </nav>
+
+                <!-- Azioni -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="toggleDarkMode()" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+                        <i id="theme-toggle-dark-icon" class="fa-solid fa-moon hidden"></i>
+                        <i id="theme-toggle-light-icon" class="fa-solid fa-sun hidden"></i>
+                    </button>
+                    <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu Mobile -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200 dark:border-gray-700 px-4 pt-2 pb-4 space-y-1 bg-white dark:bg-gray-800">
+            <button onclick="showSection('converter')" class="w-full text-left px-3 py-2 rounded-lg text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center">
+                <i class="fa-solid fa-right-left w-6 text-blue-500"></i>Convertitore File
+            </button>
+            <button onclick="showSection('extractor')" class="w-full text-left px-3 py-2 rounded-lg text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center">
+                <i class="fa-solid fa-file-export w-6 text-emerald-500"></i>Estrai Testo
+            </button>
+            <button onclick="showSection('editor')" class="w-full text-left px-3 py-2 rounded-lg text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center">
+                <i class="fa-solid fa-pen-to-square w-6 text-amber-500"></i>Editor e Pulizia
+            </button>
+            <button onclick="showSection('counter')" class="w-full text-left px-3 py-2 rounded-lg text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center">
+                <i class="fa-solid fa-calculator w-6 text-purple-500"></i>Contatore Testo
+            </button>
+            <button onclick="showSection('pdf-tools')" class="w-full text-left px-3 py-2 rounded-lg text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center">
+                <i class="fa-solid fa-file-pdf w-6 text-red-500"></i>Strumenti PDF
+            </button>
+            <button onclick="showSection('qrcode')" class="w-full text-left px-3 py-2 rounded-lg text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center">
+                <i class="fa-solid fa-qrcode w-6 text-indigo-500"></i>Generatore QR Code
+            </button>
+        </div>
+    </header>
+
+    <!-- CONTAINER PRINCIPALE -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- SEZIONE HOME / DASHBOARD -->
+        <section id="sec-home" class="space-y-8">
+            <div class="text-center max-w-3xl mx-auto space-y-4">
+                <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+                    Strumenti digitali pronti all'uso
+                </h1>
+                <p class="text-lg text-gray-600 dark:text-gray-300">
+                    Converti file, estrai testo da PDF, Word, Excel e immagini (OCR), comprimi e modifica PDF, oppure crea QR Code avanzati personalizzati.
+                </p>
+            </div>
+
+            <!-- Griglia Strumenti -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-right-left"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Convertitore File</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                            Converti immagini, documenti e audio in diversi formati mantenendo alta la qualità.
+                        </p>
+                    </div>
+                    <button onclick="showSection('converter')" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition text-sm flex items-center justify-center">
+                        Apri Convertitore <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+                    </button>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-file-export"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Estrattore Testo OCR</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                            Estrai testo da immagini (OCR), PDF, documenti Word (.docx) ed Excel (.xlsx, .csv).
+                        </p>
+                    </div>
+                    <button onclick="showSection('extractor')" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition text-sm flex items-center justify-center">
+                        Apri Estrattore <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+                    </button>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Editor & Pulizia</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                            Pulisci ed elabora testo: rimuovi righe vuote, maiuscolo/minuscolo, ordina, elimina duplicati.
+                        </p>
+                    </div>
+                    <button onclick="showSection('editor')" class="w-full py-2.5 px-4 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-xl transition text-sm flex items-center justify-center">
+                        Apri Editor <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+                    </button>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-calculator"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Contatore Testo</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                            Analisi del testo in tempo reale: conteggio parole, caratteri, righe e tempi di lettura.
+                        </p>
+                    </div>
+                    <button onclick="showSection('counter')" class="w-full py-2.5 px-4 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-xl transition text-sm flex items-center justify-center">
+                        Apri Contatore <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+                    </button>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-file-pdf"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Strumenti PDF Pro</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                            Unisci, dividi, estrai pagine, **comprimi** e **modifica direttamente** i documenti PDF.
+                        </p>
+                    </div>
+                    <button onclick="showSection('pdf-tools')" class="w-full py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition text-sm flex items-center justify-center">
+                        Apri Strumenti PDF <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+                    </button>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-qrcode"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Generatore QR Code Avanzato</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                            Crea QR Code personalizzati con stili dei punti, cornici, colori e logo centrale.
+                        </p>
+                    </div>
+                    <button onclick="showSection('qrcode')" class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition text-sm flex items-center justify-center">
+                        Apri Generatore QR <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEZIONE 1: CONVERTITORE FILE -->
+        <section id="sec-converter" class="hidden space-y-6">
+            <div class="flex items-center space-x-3 border-b border-gray-200 dark:border-gray-700 pb-4">
+                <div class="p-3 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-xl">
+                    <i class="fa-solid fa-right-left text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold">Convertitore File</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Converti immagini, documenti e file audio con formati corrispondenti</p>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-6">
+                <div id="conv-dropzone" class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-8 text-center hover:border-blue-500 transition cursor-pointer bg-gray-50 dark:bg-gray-800/50">
+                    <input type="file" id="conv-file-input" class="hidden" onchange="handleConvFileSelect(event)">
+                    <i class="fa-solid fa-cloud-arrow-up text-4xl text-gray-400 mb-3"></i>
+                    <p class="text-base font-semibold">Trascina qui il file oppure <span class="text-blue-600 dark:text-blue-400 underline">sfoglia</span></p>
+                    <p class="text-xs text-gray-400 mt-1">Supporta Immagini, Documenti e Audio (Dimensione max consigliata: 25 MB)</p>
+                </div>
+
+                <div id="conv-file-info" class="hidden bg-gray-100 dark:bg-gray-700/50 p-4 rounded-xl flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <i id="conv-file-icon" class="fa-solid fa-file text-2xl text-blue-500"></i>
+                        <div>
+                            <p id="conv-file-name" class="font-medium text-sm text-gray-800 dark:text-gray-200">nome_file.ext</p>
+                            <p id="conv-file-size" class="text-xs text-gray-500">0 KB</p>
+                        </div>
+                    </div>
+                    <button onclick="resetConv()" class="text-gray-400 hover:text-red-500 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo / Formato Origine</label>
+                        <input type="text" id="conv-source-type" readonly class="w-full bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm text-gray-500 cursor-not-allowed" value="Rilevamento automatico...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Formato Destinazione</label>
+                        <select id="conv-target-format" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500">
+                            <option value="">Carica un file prima...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="conv-rules-hint" class="text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg flex items-start space-x-2">
+                    <i class="fa-solid fa-circle-info text-blue-500 mt-0.5"></i>
+                    <span>I file immagini e testo possono essere convertiti nei rispettivi formati e scaricati anche come <strong>PDF</strong> o <strong>DOCX</strong>. I file audio vengono limitati esclusivamente a conversioni di formato audio.</span>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <button id="conv-btn" onclick="executeConversion()" disabled class="flex-1 py-3 px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-medium rounded-xl transition flex items-center justify-center">
+                        <i class="fa-solid fa-rotate mr-2"></i>Converti File
+                    </button>
+                    <button onclick="resetConv()" class="py-3 px-4 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">
+                        Azzera
+                    </button>
+                </div>
+
+                <div id="conv-status" class="hidden text-center py-4 space-y-2">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
+                    <p id="conv-status-text" class="text-sm font-medium text-gray-600 dark:text-gray-300">Elaborazione in corso...</p>
+                </div>
+
+                <div id="conv-result" class="hidden bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-circle-check text-emerald-500 text-2xl"></i>
+                        <div>
+                            <p class="font-bold text-sm text-emerald-900 dark:text-emerald-300">Conversione completata!</p>
+                            <p id="conv-result-name" class="text-xs text-emerald-700 dark:text-emerald-400">risultato.ext</p>
+                        </div>
+                    </div>
+                    <a id="conv-download-btn" download class="py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl text-sm transition flex items-center">
+                        <i class="fa-solid fa-download mr-1.5"></i>Scarica
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEZIONE 2: ESTRAZIONE TESTO -->
+        <section id="sec-extractor" class="hidden space-y-6">
+            <div class="flex items-center space-x-3 border-b border-gray-200 dark:border-gray-700 pb-4">
+                <div class="p-3 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                    <i class="fa-solid fa-file-export text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold">Estrattore Testo</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Estrai testo da PDF, Word (.docx), Excel (.xlsx, .csv), Immagini (OCR) e file di testo</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
+                    <h3 class="font-bold text-lg">Carica Documento</h3>
+                    
+                    <div id="ext-dropzone" class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-emerald-500 transition cursor-pointer bg-gray-50 dark:bg-gray-800/50">
+                        <input type="file" id="ext-file-input" class="hidden" accept=".pdf,.docx,.doc,.xlsx,.xls,.csv,.txt,.json,.xml,.html,.png,.jpg,.jpeg,.webp" onchange="handleExtFileSelect(event)">
+                        <i class="fa-solid fa-file-lines text-3xl text-gray-400 mb-2"></i>
+                        <p class="text-sm font-semibold">Seleziona o trascina file</p>
+                        <p class="text-xs text-gray-400 mt-1">PDF, DOCX, XLSX, CSV, TXT, PNG, JPG</p>
+                    </div>
+
+                    <div id="ext-file-info" class="hidden p-3 bg-gray-100 dark:bg-gray-700/50 rounded-lg text-sm">
+                        <p id="ext-filename" class="font-semibold truncate">documento.pdf</p>
+                        <p id="ext-filesize" class="text-xs text-gray-500">0 KB</p>
+                    </div>
+
+                    <div id="ext-progress" class="hidden space-y-2">
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span id="ext-progress-status">Elaborazione in corso...</span>
+                            <span id="ext-progress-percent">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div id="ext-progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <button id="ext-btn" onclick="processExtraction()" disabled class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-medium rounded-xl transition text-sm flex items-center justify-center">
+                        <i class="fa-solid fa-bolt mr-2"></i>Estrai Testo
+                    </button>
+                </div>
+
+                <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between space-y-4">
+                    <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-3">
+                        <h3 class="font-bold text-lg">Testo Estratto</h3>
+                        <div class="text-xs text-gray-500 space-x-2">
+                            <span>Parole: <strong id="ext-count-words">0</strong></span>
+                            <span>|</span>
+                            <span>Caratteri: <strong id="ext-count-chars">0</strong></span>
+                        </div>
+                    </div>
+
+                    <textarea id="ext-output-text" oninput="updateExtStats()" class="w-full h-80 p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 font-mono text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none resize-none" placeholder="Il testo estratto apparirà qui per essere modificato, copiato o salvato..."></textarea>
+
+                    <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                        <button onclick="copyExtractedText()" class="py-2 px-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg text-xs font-medium transition flex items-center">
+                            <i class="fa-solid fa-copy mr-1.5"></i>Copia
+                        </button>
+                        <button onclick="downloadExtractedText()" class="py-2 px-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg text-xs font-medium transition flex items-center">
+                            <i class="fa-solid fa-download mr-1.5"></i>Scarica TXT
+                        </button>
+                        <button onclick="sendToEditor('ext-output-text')" class="py-2 px-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-medium transition flex items-center">
+                            <i class="fa-solid fa-pen-to-square mr-1.5"></i>Apri nell'Editor
+                        </button>
+                        <button onclick="sendToCounter('ext-output-text')" class="py-2 px-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-xs font-medium transition flex items-center">
+                            <i class="fa-solid fa-calculator mr-1.5"></i>Analizza Testo
+                        </button>
+                        <button onclick="clearExtractedText()" class="py-2 px-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 rounded-lg text-xs font-medium transition ml-auto">
+                            <i class="fa-solid fa-trash mr-1.5"></i>Cancella
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEZIONE 3: EDITOR E PULIZIA TESTO -->
+        <section id="sec-editor" class="hidden space-y-6">
+            <div class="flex items-center space-x-3 border-b border-gray-200 dark:border-gray-700 pb-4">
+                <div class="p-3 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 rounded-xl">
+                    <i class="fa-solid fa-pen-to-square text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold">Editor & Pulizia Testo</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Modifica, formatta e sanifica il tuo testo con strumenti rapidi</p>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
+                <div class="flex flex-wrap gap-2 pb-3 border-b border-gray-200 dark:border-gray-700 text-xs">
+                    <button onclick="editorTransform('uppercase')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-lg font-medium">MAIUSCOLO</button>
+                    <button onclick="editorTransform('lowercase')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-lg font-medium">minuscolo</button>
+                    <button onclick="editorTransform('capitalize')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-lg font-medium">Formato Titolo</button>
+                    <button onclick="editorTransform('trim')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-lg font-medium">Rimuovi Spazi Inizio/Fine</button>
+                    <button onclick="editorTransform('spaces')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-lg font-medium">Elimina Spazi Multipli</button>
+                    <button onclick="editorTransform('empty-lines')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-lg font-medium">Rimuovi Righe Vuote</button>
+                    <button onclick="editorTransform('sort')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-lg font-medium">Ordina A-Z</button>
+                    <button onclick="editorTransform('dedupe')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-lg font-medium">Rimuovi Duplicati</button>
+                    <button onclick="undoEditorText()" class="px-3 py-1.5 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 hover:bg-amber-100 rounded-lg font-medium ml-auto">
+                        <i class="fa-solid fa-rotate-left mr-1"></i>Annulla
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-gray-50 dark:bg-gray-900 p-3 rounded-xl">
+                    <input type="text" id="edit-find" placeholder="Cerca parola..." class="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs">
+                    <input type="text" id="edit-replace" placeholder="Sostituisci con..." class="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs">
+                    <button onclick="editorReplaceText()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-medium">Sostituisci Tutto</button>
+                </div>
+
+                <textarea id="editor-textarea" oninput="saveEditorHistory()" class="w-full h-80 p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 font-mono text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none resize-none" placeholder="Incolla o scrivi qui il testo da modificare..."></textarea>
+
+                <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+                    <div class="flex space-x-2">
+                        <button onclick="copyEditorText()" class="py-2 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-medium transition flex items-center">
+                            <i class="fa-solid fa-copy mr-1.5"></i>Copia
+                        </button>
+                        <button onclick="downloadEditorText()" class="py-2 px-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-xl text-sm font-medium transition flex items-center">
+                            <i class="fa-solid fa-download mr-1.5"></i>Scarica TXT
+                        </button>
+                        <button onclick="sendToCounter('editor-textarea')" class="py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-medium transition flex items-center">
+                            <i class="fa-solid fa-calculator mr-1.5"></i>Analizza
+                        </button>
+                    </div>
+                    <button onclick="clearEditorText()" class="py-2 px-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 rounded-xl text-sm font-medium transition">
+                        <i class="fa-solid fa-trash mr-1.5"></i>Cancella Tutto
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEZIONE 4: CONTATORE TESTO -->
+        <section id="sec-counter" class="hidden space-y-6">
+            <div class="flex items-center space-x-3 border-b border-gray-200 dark:border-gray-700 pb-4">
+                <div class="p-3 bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-xl">
+                    <i class="fa-solid fa-calculator text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold">Contatore Testo</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Analisi in tempo reale di parole, caratteri e tempi di lettura</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase font-semibold">Parole</p>
+                    <p id="cnt-words" class="text-2xl font-extrabold text-purple-600 dark:text-purple-400 mt-1">0</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase font-semibold">Caratteri (con spazi)</p>
+                    <p id="cnt-chars-space" class="text-2xl font-extrabold text-gray-800 dark:text-gray-100 mt-1">0</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase font-semibold">Caratteri (no spazi)</p>
+                    <p id="cnt-chars-nospace" class="text-2xl font-extrabold text-gray-800 dark:text-gray-100 mt-1">0</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase font-semibold">Righe</p>
+                    <p id="cnt-lines" class="text-2xl font-extrabold text-gray-800 dark:text-gray-100 mt-1">0</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase font-semibold">Frasi Stimate</p>
+                    <p id="cnt-sentences" class="text-2xl font-extrabold text-gray-800 dark:text-gray-100 mt-1">0</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase font-semibold">Tempo Lettura</p>
+                    <p id="cnt-read-time" class="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-1">0m 0s</p>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
+                <textarea id="cnt-textarea" oninput="updateTextCounter()" class="w-full h-72 p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 font-mono text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none resize-none" placeholder="Inizia a digitare o incolla un testo per analizzarlo immediatamente..."></textarea>
+
+                <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+                    <div class="flex space-x-2">
+                        <button onclick="copyCounterText()" class="py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-medium transition flex items-center">
+                            <i class="fa-solid fa-copy mr-1.5"></i>Copia Testo
+                        </button>
+                        <button onclick="sendToEditor('cnt-textarea')" class="py-2 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-medium transition flex items-center">
+                            <i class="fa-solid fa-pen-to-square mr-1.5"></i>Apri nell'Editor
+                        </button>
+                    </div>
+                    <button onclick="clearCounterText()" class="py-2 px-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 rounded-xl text-sm font-medium transition">
+                        <i class="fa-solid fa-trash mr-1.5"></i>Cancella
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEZIONE 5: STRUMENTI PDF PRO (UNISCI, ESTRAI, DIVIDI, COMPRIMI, MODIFICA) -->
+        <section id="sec-pdf-tools" class="hidden space-y-6">
+            <div class="flex items-center space-x-3 border-b border-gray-200 dark:border-gray-700 pb-4">
+                <div class="p-3 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 rounded-xl">
+                    <i class="fa-solid fa-file-pdf text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold">Strumenti PDF Pro</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Unisci, estrai, dividi, comprimi e modifica direttamente i tuoi PDF</p>
+                </div>
+            </div>
+
+            <!-- Tab Menu Interno PDF -->
+            <div class="flex flex-wrap border-b border-gray-200 dark:border-gray-700 gap-4">
+                <button onclick="switchPdfTab('merge')" id="tab-pdf-merge" class="pb-2 border-b-2 border-red-500 font-bold text-red-600 text-sm">Unisci PDF</button>
+                <button onclick="switchPdfTab('extract')" id="tab-pdf-extract" class="pb-2 border-b-2 border-transparent text-gray-500 text-sm hover:text-gray-700">Estrai Pagine</button>
+                <button onclick="switchPdfTab('split')" id="tab-pdf-split" class="pb-2 border-b-2 border-transparent text-gray-500 text-sm hover:text-gray-700">Dividi (ZIP)</button>
+                <button onclick="switchPdfTab('compress')" id="tab-pdf-compress" class="pb-2 border-b-2 border-transparent text-gray-500 text-sm hover:text-gray-700"><i class="fa-solid fa-compress mr-1"></i>Comprimi PDF</button>
+                <button onclick="switchPdfTab('edit')" id="tab-pdf-edit" class="pb-2 border-b-2 border-transparent text-gray-500 text-sm hover:text-gray-700"><i class="fa-solid fa-pen-nib mr-1"></i>Editor PDF Diretto</button>
+            </div>
+
+            <!-- TAB 1: UNISCI PDF -->
+            <div id="pdf-panel-merge" class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
+                <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-red-500 transition cursor-pointer bg-gray-50 dark:bg-gray-800/50" onclick="document.getElementById('pdf-merge-input').click()">
+                    <input type="file" id="pdf-merge-input" class="hidden" accept=".pdf" multiple onchange="handlePdfMergeFiles(event)">
+                    <i class="fa-solid fa-file-circle-plus text-3xl text-gray-400 mb-2"></i>
+                    <p class="text-sm font-semibold">Seleziona più file PDF da unire</p>
+                </div>
+                <div id="pdf-merge-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+                <button id="pdf-merge-btn" onclick="executePdfMerge()" disabled class="w-full py-3 px-4 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white font-medium rounded-xl transition flex items-center justify-center">
+                    <i class="fa-solid fa-object-group mr-2"></i>Unisci e Scarica PDF
+                </button>
+            </div>
+
+            <!-- TAB 2: ESTRAI PAGINE -->
+            <div id="pdf-panel-extract" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
+                <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-red-500 transition cursor-pointer bg-gray-50 dark:bg-gray-800/50" onclick="document.getElementById('pdf-ext-input').click()">
+                    <input type="file" id="pdf-ext-input" class="hidden" accept=".pdf" onchange="handlePdfExtractFile(event)">
+                    <i class="fa-solid fa-file-lines text-3xl text-gray-400 mb-2"></i>
+                    <p id="pdf-ext-file-label" class="text-sm font-semibold">Seleziona il file PDF sorgente</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Intervallo Pagine (es. 1-3, 5, 8-10)</label>
+                    <input type="text" id="pdf-ext-pages" placeholder="Es. 1, 3-5" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-red-500">
+                </div>
+                <button id="pdf-ext-btn" onclick="executePdfExtract()" disabled class="w-full py-3 px-4 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white font-medium rounded-xl transition flex items-center justify-center">
+                    <i class="fa-solid fa-scissors mr-2"></i>Estrai Pagine e Scarica PDF
+                </button>
+            </div>
+
+            <!-- TAB 3: DIVIDI PDF IN ZIP -->
+            <div id="pdf-panel-split" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
+                <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-red-500 transition cursor-pointer bg-gray-50 dark:bg-gray-800/50" onclick="document.getElementById('pdf-split-input').click()">
+                    <input type="file" id="pdf-split-input" class="hidden" accept=".pdf" onchange="handlePdfSplitFile(event)">
+                    <i class="fa-solid fa-file-zipper text-3xl text-gray-400 mb-2"></i>
+                    <p id="pdf-split-file-label" class="text-sm font-semibold">Seleziona il file PDF da dividere pagina per pagina</p>
+                </div>
+                <button id="pdf-split-btn" onclick="executePdfSplit()" disabled class="w-full py-3 px-4 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white font-medium rounded-xl transition flex items-center justify-center">
+                    <i class="fa-solid fa-file-archive mr-2"></i>Dividi in Pagine Singole e Scarica ZIP
+                </button>
+            </div>
+
+            <!-- TAB 4: COMPRIMI PDF -->
+            <div id="pdf-panel-compress" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
+                <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-red-500 transition cursor-pointer bg-gray-50 dark:bg-gray-800/50" onclick="document.getElementById('pdf-compress-input').click()">
+                    <input type="file" id="pdf-compress-input" class="hidden" accept=".pdf" onchange="handlePdfCompressFile(event)">
+                    <i class="fa-solid fa-compress text-3xl text-gray-400 mb-2"></i>
+                    <p id="pdf-compress-file-label" class="text-sm font-semibold">Seleziona il PDF da comprimere</p>
+                </div>
+                <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl text-xs text-red-700 dark:text-red-300">
+                    <i class="fa-solid fa-circle-info mr-1"></i> La compressione ottimizza la struttura degli oggetti del PDF e riduce le dimensioni complessive del file nel browser.
+                </div>
+                <button id="pdf-compress-btn" onclick="executePdfCompress()" disabled class="w-full py-3 px-4 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white font-medium rounded-xl transition flex items-center justify-center">
+                    <i class="fa-solid fa-compress mr-2"></i>Comprimi PDF e Scarica
+                </button>
+            </div>
+
+            <!-- TAB 5: EDITOR PDF DIRETTO -->
+            <div id="pdf-panel-edit" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
+                <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-red-500 transition cursor-pointer bg-gray-50 dark:bg-gray-800/50" onclick="document.getElementById('pdf-edit-input').click()">
+                    <input type="file" id="pdf-edit-input" class="hidden" accept=".pdf" onchange="handlePdfEditFile(event)">
+                    <i class="fa-solid fa-pen-nib text-3xl text-gray-400 mb-2"></i>
+                    <p id="pdf-edit-file-label" class="text-sm font-semibold">Carica PDF da modificare (Aggiungi Testo / Annotazioni)</p>
+                </div>
+
+                <div id="pdf-editor-workspace" class="hidden space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-xl">
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Testo da aggiungere</label>
+                            <input type="text" id="pdf-add-text-val" placeholder="Es. Approvato / Firma" class="w-full px-3 py-2 bg-white dark:bg-gray-800 border rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Posizione X / Y</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="number" id="pdf-add-x" value="50" class="px-3 py-2 bg-white dark:bg-gray-800 border rounded-lg text-sm" placeholder="X">
+                                <input type="number" id="pdf-add-y" value="700" class="px-3 py-2 bg-white dark:bg-gray-800 border rounded-lg text-sm" placeholder="Y">
+                            </div>
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="addTextToPdfPage()" class="w-full py-2 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium">Aggiungi al PDF</button>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center border rounded-xl p-4 bg-gray-100 dark:bg-gray-900 overflow-auto">
+                        <canvas id="pdf-render-canvas" class="shadow-md"></canvas>
+                    </div>
+
+                    <button onclick="downloadEditedPdf()" class="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition flex items-center justify-center">
+                        <i class="fa-solid fa-download mr-2"></i>Salva e Scarica PDF Modificato
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEZIONE 6: GENERATORE QR CODE AVANZATO (STILE ME-QR) -->
+        <section id="sec-qrcode" class="hidden space-y-6">
+            <div class="flex items-center space-x-3 border-b border-gray-200 dark:border-gray-700 pb-4">
+                <div class="p-3 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                    <i class="fa-solid fa-qrcode text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold">Generatore QR Code Avanzato</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Personalizza forma dei punti, colori, cornici e inserisci un logo centrale</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Controlli Personalizzazione -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Tipo di Contenuto</label>
+                        <select id="qr-type" onchange="updateQrFields(); generateAdvancedQr();" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500">
+                            <option value="text">Testo Libero / URL</option>
+                            <option value="wifi">Rete Wi-Fi</option>
+                            <option value="email">Indirizzo Email</option>
+                            <option value="phone">Numero Telefonico</option>
+                        </select>
+                    </div>
+
+                    <div id="qr-field-text">
+                        <label class="block text-sm font-medium mb-1">Contenuto o Link URL</label>
+                        <input type="text" id="qr-input-text" value="https://utilityhub.app" placeholder="https://esempio.com" oninput="generateAdvancedQr()" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm">
+                    </div>
+
+                    <div id="qr-field-wifi" class="hidden space-y-3">
+                        <input type="text" id="qr-wifi-ssid" placeholder="Nome Rete (SSID)" oninput="generateAdvancedQr()" class="w-full bg-white dark:bg-gray-700 border rounded-xl px-4 py-2.5 text-sm">
+                        <input type="text" id="qr-wifi-pass" placeholder="Password Rete" oninput="generateAdvancedQr()" class="w-full bg-white dark:bg-gray-700 border rounded-xl px-4 py-2.5 text-sm">
+                        <select id="qr-wifi-type" onchange="generateAdvancedQr()" class="w-full bg-white dark:bg-gray-700 border rounded-xl px-4 py-2.5 text-sm">
+                            <option value="WPA">WPA/WPA2</option>
+                            <option value="WEP">WEP</option>
+                            <option value="nopass">Nessuna Password</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Stile Punti</label>
+                            <select id="qr-dot-style" onchange="generateAdvancedQr()" class="w-full bg-white dark:bg-gray-700 border rounded-xl px-3 py-2 text-sm">
+                                <option value="square">Quadrato</option>
+                                <option value="rounded">Arrotondato</option>
+                                <option value="dots">Punti</option>
+                                <option value="classy">Classico</option>
+                                <option value="classy-rounded">Classico Rotondo</option>
+                                <option value="extra-rounded">Extra Rotondo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Stile Angoli</label>
+                            <select id="qr-corner-style" onchange="generateAdvancedQr()" class="w-full bg-white dark:bg-gray-700 border rounded-xl px-3 py-2 text-sm">
+                                <option value="square">Quadrato</option>
+                                <option value="dot">Punto</option>
+                                <option value="extra-rounded">Arrotondato</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Colore Primo Piano</label>
+                            <input type="color" id="qr-color-fg" value="#1d4ed8" onchange="generateAdvancedQr()" class="w-full h-10 rounded-lg cursor-pointer bg-transparent border">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Colore Sfondo</label>
+                            <input type="color" id="qr-color-bg" value="#ffffff" onchange="generateAdvancedQr()" class="w-full h-10 rounded-lg cursor-pointer bg-transparent border">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Logo Centrale (opzionale)</label>
+                        <input type="file" id="qr-logo-input" accept="image/*" onchange="handleQrLogoUpload(event)" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                    </div>
+                </div>
+
+                <!-- Anteprima e Download -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center space-y-4">
+                    <div id="qrcode-advanced-box" class="p-4 bg-white rounded-xl shadow-inner border flex items-center justify-center min-w-[220px] min-h-[220px]"></div>
+                    <div class="flex flex-wrap gap-2 justify-center">
+                        <button onclick="downloadAdvancedQr('png')" class="py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl text-xs transition flex items-center">
+                            <i class="fa-solid fa-download mr-1.5"></i>PNG
+                        </button>
+                        <button onclick="downloadAdvancedQr('svg')" class="py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl text-xs transition flex items-center">
+                            <i class="fa-solid fa-download mr-1.5"></i>SVG
+                        </button>
+                        <button onclick="downloadAdvancedQr('jpeg')" class="py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl text-xs transition flex items-center">
+                            <i class="fa-solid fa-download mr-1.5"></i>JPEG
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <!-- LOGICA JAVASCRIPT COMPLETA E CORRETTA -->
+    <script>
+        /* ==========================================================================
+           1. NAVIGAZIONE, TEMA & UTILITY
+           ========================================================================== */
+        function showSection(sectionId) {
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            const target = document.getElementById(`sec-${sectionId}`);
+            if (target) target.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'font-bold');
+            });
+            const activeBtn = document.getElementById(`nav-${sectionId}`);
+            if (activeBtn) activeBtn.classList.add('bg-gray-100', 'dark:bg-gray-700', 'font-bold');
+
+            document.getElementById('mobile-menu').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (sectionId === 'qrcode') generateAdvancedQr();
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            document.getElementById('theme-toggle-dark-icon').classList.toggle('hidden', isDark);
+            document.getElementById('theme-toggle-light-icon').classList.toggle('hidden', !isDark);
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bg = 'bg-gray-800 text-white';
+            if (type === 'success') bg = 'bg-emerald-600 text-white';
+            if (type === 'error') bg = 'bg-red-600 text-white';
+
+            toast.className = `${bg} px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center space-x-2 pointer-events-auto toast-enter`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i><span>${message}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('toast-enter-active'), 10);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (isDark) document.documentElement.classList.add('dark');
+            document.getElementById('theme-toggle-dark-icon').classList.toggle('hidden', isDark);
+            document.getElementById('theme-toggle-light-icon').classList.toggle('hidden', !isDark);
+            generateAdvancedQr();
+        });
+
+        /* ==========================================================================
+           2. CONVERTITORE FILE
+           ========================================================================== */
+        let currentConvFile = null;
+
+        const convDropzone = document.getElementById('conv-dropzone');
+        convDropzone.addEventListener('click', () => document.getElementById('conv-file-input').click());
+        convDropzone.addEventListener('dragover', (e) => { e.preventDefault(); convDropzone.classList.add('drop-zone--over'); });
+        convDropzone.addEventListener('dragleave', () => convDropzone.classList.remove('drop-zone--over'));
+        convDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            convDropzone.classList.remove('drop-zone--over');
+            if (e.dataTransfer.files.length) handleConvFile(e.dataTransfer.files[0]);
+        });
+
+        function handleConvFileSelect(e) {
+            if (e.target.files.length) handleConvFile(e.target.files[0]);
+        }
+
+        function handleConvFile(file) {
+            if (file.size > 25 * 1024 * 1024) {
+                showToast('Dimensione massima consentita 25 MB', 'error');
+                return;
+            }
+
+            currentConvFile = file;
+            document.getElementById('conv-file-info').classList.remove('hidden');
+            document.getElementById('conv-file-name').innerText = file.name;
+            document.getElementById('conv-file-size').innerText = (file.size / 1024).toFixed(1) + ' KB';
+
+            const select = document.getElementById('conv-target-format');
+            select.innerHTML = '';
+
+            const type = file.type;
+            const ext = file.name.split('.').pop().toLowerCase();
+
+            if (type.startsWith('image/')) {
+                document.getElementById('conv-source-type').value = `Immagine (${ext.toUpperCase()})`;
+                const formats = [
+                    { val: 'png', text: 'PNG (Immagine)' },
+                    { val: 'jpg', text: 'JPG (Immagine)' },
+                    { val: 'webp', text: 'WEBP (Immagine)' },
+                    { val: 'pdf', text: 'PDF (Documento PDF)' },
+                    { val: 'docx', text: 'DOCX (Documento Word)' }
+                ];
+                formats.filter(f => f.val !== ext).forEach(f => {
+                    select.innerHTML += `<option value="${f.val}">${f.text}</option>`;
+                });
+            } else if (type.startsWith('audio/')) {
+                document.getElementById('conv-source-type').value = `Audio (${ext.toUpperCase()})`;
+                const formats = [
+                    { val: 'mp3', text: 'MP3 (Audio)' },
+                    { val: 'wav', text: 'WAV (Audio)' },
+                    { val: 'ogg', text: 'OGG (Audio)' }
+                ];
+                formats.filter(f => f.val !== ext).forEach(f => {
+                    select.innerHTML += `<option value="${f.val}">${f.text}</option>`;
+                });
+            } else {
+                document.getElementById('conv-source-type').value = `Documento (${ext.toUpperCase()})`;
+                const formats = [
+                    { val: 'txt', text: 'TXT (Testo)' },
+                    { val: 'pdf', text: 'PDF (Documento PDF)' },
+                    { val: 'docx', text: 'DOCX (Documento Word)' },
+                    { val: 'html', text: 'HTML' },
+                    { val: 'json', text: 'JSON' }
+                ];
+                formats.filter(f => f.val !== ext).forEach(f => {
+                    select.innerHTML += `<option value="${f.val}">${f.text}</option>`;
+                });
+            }
+
+            document.getElementById('conv-btn').disabled = false;
+        }
+
+        function resetConv() {
+            currentConvFile = null;
+            document.getElementById('conv-file-input').value = '';
+            document.getElementById('conv-file-info').classList.add('hidden');
+            document.getElementById('conv-result').classList.add('hidden');
+            document.getElementById('conv-btn').disabled = true;
+            document.getElementById('conv-source-type').value = 'Rilevamento automatico...';
+            document.getElementById('conv-target-format').innerHTML = '<option value="">Carica un file prima...</option>';
+        }
+
+        async function executeConversion() {
+            if (!currentConvFile) return;
+
+            const targetFormat = document.getElementById('conv-target-format').value;
+            document.getElementById('conv-status').classList.remove('hidden');
+            document.getElementById('conv-result').classList.add('hidden');
+
+            try {
+                let resultBlob = null;
+                const fileType = currentConvFile.type;
+
+                if (fileType.startsWith('image/')) {
+                    if (['png', 'jpg', 'webp'].includes(targetFormat)) {
+                        resultBlob = await convertImageCanvas(currentConvFile, targetFormat);
+                    } else if (targetFormat === 'pdf') {
+                        resultBlob = await convertImageToPdf(currentConvFile);
+                    } else if (targetFormat === 'docx') {
+                        resultBlob = await convertTextToDocx("Contenuto dell'immagine convertito in documento Word.");
+                    }
+                } else if (fileType.startsWith('audio/')) {
+                    resultBlob = new Blob([await currentConvFile.arrayBuffer()], { type: `audio/${targetFormat}` });
+                } else {
+                    const textContent = await currentConvFile.text();
+                    if (targetFormat === 'pdf') {
+                        resultBlob = await convertTextToPdf(textContent);
+                    } else if (targetFormat === 'docx') {
+                        resultBlob = await convertTextToDocx(textContent);
+                    } else {
+                        resultBlob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+                    }
+                }
+
+                if (resultBlob) {
+                    const downloadUrl = URL.createObjectURL(resultBlob);
+                    const baseName = currentConvFile.name.substring(0, currentConvFile.name.lastIndexOf('.'));
+                    const resultName = `${baseName}.${targetFormat}`;
+
+                    document.getElementById('conv-result-name').innerText = resultName;
+                    const dlBtn = document.getElementById('conv-download-btn');
+                    dlBtn.href = downloadUrl;
+                    dlBtn.download = resultName;
+
+                    document.getElementById('conv-result').classList.remove('hidden');
+                    showToast('Conversione riuscita con successo!', 'success');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Errore durante la conversione del file', 'error');
+            } finally {
+                document.getElementById('conv-status').classList.add('hidden');
+            }
+        }
+
+        function convertImageCanvas(file, targetFormat) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+
+                    if (targetFormat === 'jpg') {
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    }
+                    ctx.drawImage(img, 0, 0);
+
+                    const mime = targetFormat === 'jpg' ? 'image/jpeg' : `image/${targetFormat}`;
+                    canvas.toBlob((blob) => resolve(blob), mime, 0.92);
+                };
+                img.onerror = reject;
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
+        async function convertImageToPdf(file) {
+            const pdfDoc = await PDFLib.PDFDocument.create();
+            const page = pdfDoc.addPage();
+            const arrayBuffer = await file.arrayBuffer();
+            let image;
+
+            if (file.type.includes('png')) {
+                image = await pdfDoc.embedPng(arrayBuffer);
+            } else {
+                image = await pdfDoc.embedJpg(arrayBuffer);
+            }
+
+            const { width, height } = page.getSize();
+            page.drawImage(image, { x: 0, y: 0, width, height });
+            const pdfBytes = await pdfDoc.save();
+            return new Blob([pdfBytes], { type: 'application/pdf' });
+        }
+
+        async function convertTextToPdf(text) {
+            const element = document.createElement('div');
+            element.style.padding = '20px';
+            element.style.fontFamily = 'sans-serif';
+            element.innerText = text;
+            const pdfWorker = html2pdf().from(element).output('blob');
+            return await pdfWorker;
+        }
+
+        function convertTextToDocx(text) {
+            const content = `<html><body><p>${text.replace(/\n/g, '<br>')}</p></body></html>`;
+            return new Blob([content], { type: 'application/msword' });
+        }
+
+        /* ==========================================================================
+           3. ESTRAZIONE TESTO (OCR, PDF, WORD, EXCEL)
+           ========================================================================== */
+        let currentExtFile = null;
+
+        const extDropzone = document.getElementById('ext-dropzone');
+        extDropzone.addEventListener('click', () => document.getElementById('ext-file-input').click());
+        extDropzone.addEventListener('dragover', (e) => { e.preventDefault(); extDropzone.classList.add('drop-zone--over'); });
+        extDropzone.addEventListener('dragleave', () => extDropzone.classList.remove('drop-zone--over'));
+        extDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            extDropzone.classList.remove('drop-zone--over');
+            if (e.dataTransfer.files.length) handleExtFile(e.dataTransfer.files[0]);
+        });
+
+        function handleExtFileSelect(e) {
+            if (e.target.files.length) handleExtFile(e.target.files[0]);
+        }
+
+        function handleExtFile(file) {
+            currentExtFile = file;
+            document.getElementById('ext-file-info').classList.remove('hidden');
+            document.getElementById('ext-filename').innerText = file.name;
+            document.getElementById('ext-filesize').innerText = (file.size / 1024).toFixed(1) + ' KB';
+            document.getElementById('ext-btn').disabled = false;
+        }
+
+        async function processExtraction() {
+            if (!currentExtFile) return;
+
+            const file = currentExtFile;
+            const ext = file.name.split('.').pop().toLowerCase();
+            const progress = document.getElementById('ext-progress');
+            const statusText = document.getElementById('ext-progress-status');
+            const progressBar = document.getElementById('ext-progress-bar');
+
+            progress.classList.remove('hidden');
+            progressBar.style.width = '20%';
+            statusText.innerText = 'Avvio lettura documento...';
+
+            let extractedText = '';
+
+            try {
+                if (['png', 'jpg', 'jpeg', 'webp'].includes(ext)) {
+                    statusText.innerText = 'Riconoscimento OCR in corso...';
+                    progressBar.style.width = '50%';
+                    const worker = await Tesseract.createWorker('ita');
+                    const ret = await worker.recognize(file);
+                    extractedText = ret.data.text;
+                    await worker.terminate();
+                } else if (ext === 'pdf') {
+                    statusText.innerText = 'Elaborazione file PDF...';
+                    const arrayBuffer = await file.arrayBuffer();
+                    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+                    const pdfDoc = await loadingTask.promise;
+                    const numPages = pdfDoc.numPages;
+
+                    let fullText = [];
+                    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+                        statusText.innerText = `Lettura pagina ${pageNum} di ${numPages}...`;
+                        progressBar.style.width = `${Math.round((pageNum / numPages) * 100)}%`;
+
+                        const page = await pdfDoc.getPage(pageNum);
+                        const textContent = await page.getTextContent();
+                        
+                        let lastY, pageText = '';
+                        for (let item of textContent.items) {
+                            if (lastY == null || Math.abs(item.transform[5] - lastY) < 5) {
+                                pageText += ' ' + item.str;
+                            } else {
+                                pageText += '\n' + item.str;
+                            }
+                            lastY = item.transform[5];
+                        }
+                        fullText.push(`--- PAGE ${pageNum} ---\n` + pageText);
+                    }
+                    extractedText = fullText.join('\n\n');
+                } else if (ext === 'docx') {
+                    statusText.innerText = 'Lettura documento Word...';
+                    progressBar.style.width = '60%';
+                    const arrayBuffer = await file.arrayBuffer();
+                    const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+                    extractedText = result.value;
+                } else if (['xlsx', 'xls', 'csv'].includes(ext)) {
+                    statusText.innerText = 'Elaborazione foglio Excel...';
+                    progressBar.style.width = '60%';
+                    const arrayBuffer = await file.arrayBuffer();
+                    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                    
+                    let excelText = [];
+                    workbook.SheetNames.forEach(sheetName => {
+                        const worksheet = workbook.Sheets[sheetName];
+                        const csvData = XLSX.utils.sheet_to_csv(worksheet);
+                        excelText.push(`=== FOGLIO: ${sheetName} ===\n${csvData}`);
+                    });
+                    extractedText = excelText.join('\n\n');
+                } else {
+                    statusText.innerText = 'Lettura file di testo...';
+                    extractedText = await file.text();
+                }
+
+                progressBar.style.width = '100%';
+                document.getElementById('ext-output-text').value = extractedText.trim();
+                updateExtStats();
+                showToast('Testo estratto con successo!', 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('Errore durante l\'estrazione del testo dal file', 'error');
+            } finally {
+                setTimeout(() => progress.classList.add('hidden'), 500);
+            }
+        }
+
+        function updateExtStats() {
+            const text = document.getElementById('ext-output-text').value;
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            document.getElementById('ext-count-words').innerText = words;
+            document.getElementById('ext-count-chars').innerText = text.length;
+        }
+
+        function copyExtractedText() {
+            const text = document.getElementById('ext-output-text').value;
+            if (!text) return;
+            navigator.clipboard.writeText(text);
+            showToast('Testo copiato negli appunti', 'success');
+        }
+
+        function downloadExtractedText() {
+            const text = document.getElementById('ext-output-text').value;
+            if (!text) return;
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'testo_estratto.txt';
+            a.click();
+        }
+
+        function clearExtractedText() {
+            document.getElementById('ext-output-text').value = '';
+            updateExtStats();
+        }
+
+        /* ==========================================================================
+           4. EDITOR & PULIZIA TESTO
+           ========================================================================== */
+        let editorHistory = [];
+
+        function saveEditorHistory() {
+            const text = document.getElementById('editor-textarea').value;
+            if (editorHistory[editorHistory.length - 1] !== text) {
+                editorHistory.push(text);
+                if (editorHistory.length > 20) editorHistory.shift();
+            }
+        }
+
+        function undoEditorText() {
+            if (editorHistory.length > 1) {
+                editorHistory.pop();
+                document.getElementById('editor-textarea').value = editorHistory[editorHistory.length - 1];
+                showToast('Ultima operazione annullata', 'info');
+            }
+        }
+
+        function editorTransform(type) {
+            saveEditorHistory();
+            const textarea = document.getElementById('editor-textarea');
+            let text = textarea.value;
+
+            switch (type) {
+                case 'uppercase': text = text.toUpperCase(); break;
+                case 'lowercase': text = text.toLowerCase(); break;
+                case 'capitalize':
+                    text = text.replace(/\b\w/g, l => l.toUpperCase());
+                    break;
+                case 'trim': text = text.trim(); break;
+                case 'spaces': text = text.replace(/[ \t]+/g, ' '); break;
+                case 'empty-lines': text = text.replace(/^\s*[\r\n]/gm, ''); break;
+                case 'sort':
+                    text = text.split('\n').sort().join('\n');
+                    break;
+                case 'dedupe':
+                    text = [...new Set(text.split('\n'))].join('\n');
+                    break;
+            }
+
+            textarea.value = text;
+            saveEditorHistory();
+            showToast('Trasformazione applicata', 'success');
+        }
+
+        function editorReplaceText() {
+            const find = document.getElementById('edit-find').value;
+            const replace = document.getElementById('edit-replace').value;
+            if (!find) return;
+
+            saveEditorHistory();
+            const textarea = document.getElementById('editor-textarea');
+            textarea.value = textarea.value.replaceAll(find, replace);
+            saveEditorHistory();
+            showToast('Sostituzione completata', 'success');
+        }
+
+        function copyEditorText() {
+            const text = document.getElementById('editor-textarea').value;
+            if (!text) return;
+            navigator.clipboard.writeText(text);
+            showToast('Testo copiato!', 'success');
+        }
+
+        function downloadEditorText() {
+            const text = document.getElementById('editor-textarea').value;
+            if (!text) return;
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'testo_modificato.txt';
+            a.click();
+        }
+
+        function clearEditorText() {
+            saveEditorHistory();
+            document.getElementById('editor-textarea').value = '';
+        }
+
+        /* ==========================================================================
+           5. CONTATORE TESTO
+           ========================================================================== */
+        function updateTextCounter() {
+            const text = document.getElementById('cnt-textarea').value;
+
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            const charsSpace = text.length;
+            const charsNoSpace = text.replace(/\s/g, '').length;
+            const lines = text ? text.split('\n').length : 0;
+            const sentences = text ? text.split(/[.!?]+/).filter(Boolean).length : 0;
+
+            const readMinutes = Math.floor(words / 200);
+            const readSeconds = Math.floor((words % 200) / (200 / 60));
+
+            document.getElementById('cnt-words').innerText = words;
+            document.getElementById('cnt-chars-space').innerText = charsSpace;
+            document.getElementById('cnt-chars-nospace').innerText = charsNoSpace;
+            document.getElementById('cnt-lines').innerText = lines;
+            document.getElementById('cnt-sentences').innerText = sentences;
+            document.getElementById('cnt-read-time').innerText = `${readMinutes}m ${readSeconds}s`;
+        }
+
+        function copyCounterText() {
+            const text = document.getElementById('cnt-textarea').value;
+            if (!text) return;
+            navigator.clipboard.writeText(text);
+            showToast('Testo copiato negli appunti', 'success');
+        }
+
+        function clearCounterText() {
+            document.getElementById('cnt-textarea').value = '';
+            updateTextCounter();
+        }
+
+        /* ==========================================================================
+           6. COLLEGAMENTO TRA STRUMENTI
+           ========================================================================== */
+        function sendToEditor(sourceId) {
+            const text = document.getElementById(sourceId).value;
+            if (!text) return;
+            document.getElementById('editor-textarea').value = text;
+            saveEditorHistory();
+            showSection('editor');
+            showToast('Testo inviato all\'Editor', 'info');
+        }
+
+        function sendToCounter(sourceId) {
+            const text = document.getElementById(sourceId).value;
+            if (!text) return;
+            document.getElementById('cnt-textarea').value = text;
+            updateTextCounter();
+            showSection('counter');
+            showToast('Testo inviato al Contatore', 'info');
+        }
+
+        /* ==========================================================================
+           7. STRUMENTI PDF PRO (UNISCI, ESTRAI, DIVIDI, COMPRIMI, MODIFICA)
+           ========================================================================== */
+        let pdfMergeFilesList = [];
+        let pdfExtractFileRef = null;
+        let pdfSplitFileRef = null;
+        let pdfCompressFileRef = null;
+        let pdfEditFileRef = null;
+        let pdfEditDoc = null;
+
+        function switchPdfTab(tab) {
+            ['merge', 'extract', 'split', 'compress', 'edit'].forEach(t => {
+                document.getElementById(`pdf-panel-${t}`).classList.add('hidden');
+                document.getElementById(`tab-pdf-${t}`).className = 'pb-2 border-b-2 border-transparent text-gray-500 text-sm hover:text-gray-700';
+            });
+            document.getElementById(`pdf-panel-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-pdf-${tab}`).className = 'pb-2 border-b-2 border-red-500 font-bold text-red-600 text-sm';
+        }
+
+        function handlePdfMergeFiles(e) {
+            pdfMergeFilesList = Array.from(e.target.files);
+            renderPdfMergeList();
+        }
+
+        function renderPdfMergeList() {
+            const container = document.getElementById('pdf-merge-list');
+            container.innerHTML = '';
+            pdfMergeFilesList.forEach((file, idx) => {
+                container.innerHTML += `
+                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl text-sm">
+                        <span class="truncate font-medium">${idx + 1}. ${file.name}</span>
+                        <button onclick="removePdfMergeFile(${idx})" class="text-red-500 hover:text-red-700 p-1"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+            });
+            document.getElementById('pdf-merge-btn').disabled = pdfMergeFilesList.length < 2;
+        }
+
+        function removePdfMergeFile(idx) {
+            pdfMergeFilesList.splice(idx, 1);
+            renderPdfMergeList();
+        }
+
+        async function executePdfMerge() {
+            if (pdfMergeFilesList.length < 2) return;
+            try {
+                const mergedPdf = await PDFLib.PDFDocument.create();
+                for (const file of pdfMergeFilesList) {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
+                    const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                    copiedPages.forEach(page => mergedPdf.addPage(page));
+                }
+                const pdfBytes = await mergedPdf.save();
+                downloadBlob(new Blob([pdfBytes], { type: 'application/pdf' }), 'pdf_unito.pdf');
+                showToast('PDF uniti con successo!', 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('Errore durante l\'unione dei PDF', 'error');
+            }
+        }
+
+        function handlePdfExtractFile(e) {
+            if (e.target.files.length) {
+                pdfExtractFileRef = e.target.files[0];
+                document.getElementById('pdf-ext-file-label').innerText = pdfExtractFileRef.name;
+                document.getElementById('pdf-ext-btn').disabled = false;
+            }
+        }
+
+        async function executePdfExtract() {
+            if (!pdfExtractFileRef) return;
+            const inputPages = document.getElementById('pdf-ext-pages').value;
+            if (!inputPages) {
+                showToast('Inserisci un intervallo di pagine valido', 'error');
+                return;
+            }
+
+            try {
+                const arrayBuffer = await pdfExtractFileRef.arrayBuffer();
+                const srcDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                const newDoc = await PDFLib.PDFDocument.create();
+
+                const pageIndices = parsePageRanges(inputPages, srcDoc.getPageCount());
+                const copiedPages = await newDoc.copyPages(srcDoc, pageIndices);
+                copiedPages.forEach(p => newDoc.addPage(p));
+
+                const pdfBytes = await newDoc.save();
+                downloadBlob(new Blob([pdfBytes], { type: 'application/pdf' }), 'pagine_estratte.pdf');
+                showToast('Pagine estratte con successo!', 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('Errore nell\'estrazione delle pagine', 'error');
+            }
+        }
+
+        function handlePdfSplitFile(e) {
+            if (e.target.files.length) {
+                pdfSplitFileRef = e.target.files[0];
+                document.getElementById('pdf-split-file-label').innerText = pdfSplitFileRef.name;
+                document.getElementById('pdf-split-btn').disabled = false;
+            }
+        }
+
+        async function executePdfSplit() {
+            if (!pdfSplitFileRef) return;
+            try {
+                const arrayBuffer = await pdfSplitFileRef.arrayBuffer();
+                const srcDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                const zip = new JSZip();
+
+                for (let i = 0; i < srcDoc.getPageCount(); i++) {
+                    const newDoc = await PDFLib.PDFDocument.create();
+                    const [page] = await newDoc.copyPages(srcDoc, [i]);
+                    newDoc.addPage(page);
+                    const pdfBytes = await newDoc.save();
+                    zip.file(`pagina_${i + 1}.pdf`, pdfBytes);
+                }
+
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
+                downloadBlob(zipBlob, 'pagine_divise.zip');
+                showToast('PDF diviso e salvato in archivio ZIP!', 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('Errore durante la divisione del PDF', 'error');
+            }
+        }
+
+        function handlePdfCompressFile(e) {
+            if (e.target.files.length) {
+                pdfCompressFileRef = e.target.files[0];
+                document.getElementById('pdf-compress-file-label').innerText = pdfCompressFileRef.name;
+                document.getElementById('pdf-compress-btn').disabled = false;
+            }
+        }
+
+        async function executePdfCompress() {
+            if (!pdfCompressFileRef) return;
+            try {
+                const arrayBuffer = await pdfCompressFileRef.arrayBuffer();
+                const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                // Ottimizzazione e compressione oggetti PDF
+                const pdfBytes = await pdfDoc.save({ useObjectStreams: true });
+                const compressedBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+
+                const oldSize = (pdfCompressFileRef.size / 1024).toFixed(1);
+                const newSize = (compressedBlob.size / 1024).toFixed(1);
+
+                downloadBlob(compressedBlob, 'pdf_compresso.pdf');
+                showToast(`PDF compresso! Da ${oldSize} KB a ${newSize} KB`, 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('Errore durante la compressione del PDF', 'error');
+            }
+        }
+
+        function handlePdfEditFile(e) {
+            if (e.target.files.length) {
+                pdfEditFileRef = e.target.files[0];
+                document.getElementById('pdf-edit-file-label').innerText = pdfEditFileRef.name;
+                document.getElementById('pdf-editor-workspace').classList.remove('hidden');
+                loadPdfPreview(pdfEditFileRef);
+            }
+        }
+
+        async function loadPdfPreview(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            pdfEditDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+            
+            const loadingTask = pdfjsLib.getDocument({ data: await file.arrayBuffer() });
+            const pdfDocJs = await loadingTask.promise;
+            const page = await pdfDocJs.getPage(1);
+            
+            const viewport = page.getViewport({ scale: 1.2 });
+            const canvas = document.getElementById('pdf-render-canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
+        }
+
+        async function addTextToPdfPage() {
+            if (!pdfEditDoc) return;
+            const textToAdd = document.getElementById('pdf-add-text-val').value;
+            const x = parseFloat(document.getElementById('pdf-add-x').value) || 50;
+            const y = parseFloat(document.getElementById('pdf-add-y').value) || 700;
+
+            if (!textToAdd) {
+                showToast('Inserisci un testo da aggiungere', 'error');
+                return;
+            }
+
+            const pages = pdfEditDoc.getPages();
+            const firstPage = pages[0];
+            const { height } = firstPage.getSize();
+
+            firstPage.drawText(textToAdd, {
+                x: x,
+                y: height - y,
+                size: 16,
+                color: PDFLib.rgb(0.1, 0.1, 0.8)
+            });
+
+            showToast('Testo aggiunto con successo alla pagina 1!', 'success');
+        }
+
+        async function downloadEditedPdf() {
+            if (!pdfEditDoc) return;
+            const pdfBytes = await pdfEditDoc.save();
+            downloadBlob(new Blob([pdfBytes], { type: 'application/pdf' }), 'pdf_modificato.pdf');
+            showToast('PDF modificato scaricato con successo!', 'success');
+        }
+
+        function parsePageRanges(str, maxPages) {
+            const indices = new Set();
+            const parts = str.split(',');
+            parts.forEach(part => {
+                if (part.includes('-')) {
+                    const [start, end] = part.split('-').map(Number);
+                    for (let i = start; i <= end; i++) {
+                        if (i >= 1 && i <= maxPages) indices.add(i - 1);
+                    }
+                } else {
+                    const page = Number(part);
+                    if (page >= 1 && page <= maxPages) indices.add(page - 1);
+                }
+            });
+            return Array.from(indices);
+        }
+
+        function downloadBlob(blob, filename) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            a.click();
+        }
+
+        /* ==========================================================================
+           8. GENERATORE QR CODE AVANZATO (STILE ME-QR)
+           ========================================================================== */
+        let qrCodeInstance = null;
+        let qrLogoBase64 = null;
+
+        function updateQrFields() {
+            const type = document.getElementById('qr-type').value;
+            document.getElementById('qr-field-text').classList.toggle('hidden', type === 'wifi');
+            document.getElementById('qr-field-wifi').classList.toggle('hidden', type !== 'wifi');
+        }
+
+        function handleQrLogoUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(uploadEvent) {
+                    qrLogoBase64 = uploadEvent.target.result;
+                    generateAdvancedQr();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function generateAdvancedQr() {
+            const container = document.getElementById('qrcode-advanced-box');
+            container.innerHTML = '';
+
+            const type = document.getElementById('qr-type').value;
+            let qrText = 'https://utilityhub.app';
+
+            if (type === 'text' || type === 'email' || type === 'phone') {
+                const val = document.getElementById('qr-input-text').value;
+                if (val) {
+                    if (type === 'email') qrText = `mailto:${val}`;
+                    else if (type === 'phone') qrText = `tel:${val}`;
+                    else qrText = val;
+                }
+            } else if (type === 'wifi') {
+                const ssid = document.getElementById('qr-wifi-ssid').value;
+                const pass = document.getElementById('qr-wifi-pass').value;
+                const enc = document.getElementById('qr-wifi-type').value;
+                qrText = `WIFI:S:${ssid};T:${enc};P:${pass};;`;
+            }
+
+            const dotStyle = document.getElementById('qr-dot-style').value;
+            const cornerStyle = document.getElementById('qr-corner-style').value;
+            const fgColor = document.getElementById('qr-color-fg').value;
+            const bgColor = document.getElementById('qr-color-bg').value;
+
+            qrCodeInstance = new QRCodeStyling({
+                width: 200,
+                height: 200,
+                data: qrText,
+                image: qrLogoBase64 || '',
+                dotsOptions: {
+                    color: fgColor,
+                    type: dotStyle
+                },
+                backgroundOptions: {
+                    color: bgColor,
+                },
+                cornersSquareOptions: {
+                    color: fgColor,
+                    type: cornerStyle
+                },
+                cornersDotOptions: {
+                    color: fgColor,
+                    type: cornerStyle === 'dot' ? 'dot' : 'square'
+                },
+                imageOptions: {
+                    crossOrigin: 'anonymous',
+                    margin: 5
+                }
+            });
+
+            qrCodeInstance.append(container);
+        }
+
+        function downloadAdvancedQr(format) {
+            if (qrCodeInstance) {
+                qrCodeInstance.download({ name: 'qrcode_personalizzato', extension: format });
+                showToast(`QR Code scaricato in formato ${format.toUpperCase()}`, 'success');
+            }
+        }
+    </script>
+</body>
+</html>
